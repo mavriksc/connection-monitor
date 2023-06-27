@@ -1,0 +1,8 @@
+{
+  "name": "connection-monitor",
+  "description": "Will ping things and graph it",
+  "success_url": "/",
+  "env": {
+    "BUILDPACK_URL": "https://github.com/heroku/heroku-buildpack-nodejs"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "connection-monitor",
+  "version": "0.0.1",
+  "description": "Will ping things and graph it",
+  "dependencies": {
+    "express": "^4.17.1",
+    "ping": "^0.4.4",
+    "plotly.js": "^1.47.4",
+    "socket.io": "^4.1.2"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
