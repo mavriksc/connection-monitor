@@ -3,28 +3,55 @@ const http = require('http').Server(app);
 const io = require('socket.io')(http);
 const port = process.env.PORT || 3000;
 const ping = require('ping');
+const fs = require('fs');
 
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
-const hosts = ['8.8.8.8', 'google.com', 'amazon.com'];//
+
+const hosts = process.env.HOSTS ? process.env.HOSTS.split(',') : ['8.8.8.8'];
+const pollingRate = (process.env.POLL_RATE ? process.env.POLL_RATE : 5) * 1000;
 const intervalMap = new Map();
+const pingCache = new Map();
 let usersCount = 0;
+hosts.forEach(h => pingCache.set(h, new Map()));
+
+function writeToFile(host) {
+  console.log(`outputting to file for host:${host}`);
+  const timestamps = new Map([...pingCache.get(host)]
+    .sort((a, b) => a[0].getTime() - b[0].getTime()));
+  let output = '';
+  timestamps.forEach((value, key) =>
+    output = output.concat(`\n${key.toISOString()} : ${value}`));
+  const date = new Date().toISOString().slice(0, 10);
+  const filename = `logs/${host}-${date}.log`;
+  fs.appendFile(filename, output, err => {
+    if (err) console.log("writing error")
+  });
+  pingCache.get(host).clear();
+}
 
 function startPolling() {
   hosts.forEach(function (host) {
     console.log('Start polling host ' + host);
     intervalMap.set(host, setInterval(function () {
       ping.promise.probe(host).then(function (res) {
-        io.emit(res.inputHost, res.time)
+        const time = new Date();
+        const ping = res.alive ? res.time : 0;
+        const resJson = '{"time":"' + time + '","ping":' + ping + '}';
+        io.emit(res.inputHost, resJson);
+        pingCache.get(host).set(time, ping);
+        if (pingCache.get(host).size > 99) {
+          writeToFile(host);
+        }
       });
-    }, 1000));
+    }, pollingRate));
   });
 }
 
 function stopPolling() {
-  intervalMap.forEach( (value, key) => {
+  intervalMap.forEach((value, key) => {
     console.log('stop polling: ' + key);
     clearInterval(value);
   });

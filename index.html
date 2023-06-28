@@ -10,33 +10,27 @@
 
 <script>
   const socket = io();
-  const colors = ['#80CAF6', '#DF56F1', '#66f156'];
   let hs;
 
-  function createPlot(hosts) {
+  function createPlot() {
     const data = [];
     hs.forEach(host => {
-      const color = colors[hosts.indexOf(host)]
       const time = new Date();
       const traceData = {
         x: [time],
         y: [0],
         name: host,
         mode: 'lines',
-        line: {
-          color: color,
-        }
       }
       data.push(traceData);
     });
     Plotly.plot('graph', data);
   }
 
-  function updatePlot(host, msg) {
-    const time = new Date();
+  function updatePlot(host, response) {
     const update = {
-      x: [[time]],
-      y: [[msg]]
+      x: [[new Date(response.time)]],
+      y: [[response.ping]]
     };
     Plotly.extendTraces('graph', update, [hs.indexOf(host)])
 
@@ -44,11 +38,12 @@
 
   socket.on('hosts', function (hosts) {
     hs = hosts;
-    createPlot(hosts)
+    createPlot()
     hs.forEach(function (host) {
       console.log(host);
       socket.on(host, function (msg) {
-        updatePlot(host, msg)
+        const response = JSON.parse(msg);
+        updatePlot(host, response);
       });
     });
   });
