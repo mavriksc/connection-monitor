@@ -1,0 +1,11 @@
+services:
+  connection-monitor:
+    image: smcarlisle/connection-monitor:0.3
+    ports:
+      - "3000:3000"
+    environment:
+      HOSTS: 8.8.8.8,google.com,amazon.com
+      POLL_RATE: 5
+      ALWAYS_ON: true #false
+    volumes:
+      - ./docker-logs:/usr/src/app/logs
