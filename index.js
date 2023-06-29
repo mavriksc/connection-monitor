@@ -4,28 +4,116 @@ const io = require('socket.io')(http);
 const port = process.env.PORT || 3000;
 const ping = require('ping');
 const fs = require('fs');
-
-let logs = logsList();
-app.get('/', (req, res) => {
-  res.sendFile(__dirname + '/index.html');
-});
-app.get('/:filename', (req, res) => {
-  if (logs.indexOf(req.params.filename) >= 0)
-    res.download(`${__dirname}/logs/${req.params.filename}`);
-  else {
-    console.error(`bad path sent ${req.params.filename}`);
-    res.status(404).send({error: 'no log file here ¯\\_(ツ)_/¯'});
-  }
-});
+const JSZip = require('jszip');
+const cron = require('node-cron');
 
 
 const hosts = process.env.HOSTS ? process.env.HOSTS.split(',') : ['8.8.8.8'];
 const pollingRate = (process.env.POLL_RATE ? process.env.POLL_RATE : 5) * 1000;
 const minUserCount = process.env.ALWAYS_ON === 'true' ? 1 : 0;
+const uncompressedLogDays = process.env.UNCOMPRESSED_LOG_DAYS ? process.env.UNCOMPRESSED_LOG_DAYS : 0;
+const logsPath = `${__dirname}/logs/`;
+const logArchiveFileName = 'logs.zip';
 const intervalMap = new Map();
 const pingCache = new Map();
+
+let logs = logsList();
 hosts.forEach(h => pingCache.set(h, new Map()));
 let usersCount = minUserCount;
+
+if (usersCount) startPolling();
+io.on('connection', (socket) => {
+  usersCount++;
+  console.log('user connected');
+  socket.emit('hosts', hosts);
+  socket.emit('files', logs);
+  if (usersCount === 1) startPolling();
+  socket.on('disconnect', () => {
+    console.log('user disconnected');
+    usersCount--;
+    if (usersCount === 0) stopPolling();
+  });
+});
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+});
+app.get('/:filename', (req, res) => {
+  if (logs.indexOf(req.params.filename) >= 0)
+    res.download(`${logsPath}${req.params.filename}`);
+  else {
+    console.error(`bad path sent ${req.params.filename}`);
+    res.status(404).send({error: 'no log file here ¯\\_(ツ)_/¯'});
+  }
+});
+http.listen(port, () => {
+  console.log(`Socket.IO server running at http://localhost:${port}/`);
+});
+
+process.on('exit', function () {
+  console.log('About to exit.');
+  hosts.forEach(host => writeToFile(host));
+});
+
+cron.schedule('0 0 1 * *', () => {
+  archiveOldLogs();
+});
+
+function archiveOldLogs() {
+  console.log('Starting Archive cron job');
+  let cutoffDate = new Date(new Date().toISOString().slice(0, 10));
+  cutoffDate.setDate(cutoffDate.getDate() - uncompressedLogDays);
+  const logsToArchive = logs.filter(s => cutoffDate > (new Date(s.slice(s.length - 14, s.length - 4))));
+  if (logsToArchive.length)  zipLogs(logsToArchive);
+}
+
+function zipLogs(fileList) {
+  if (logs.indexOf(logArchiveFileName) >= 0) {
+    //exists
+    console.log('Archive exists')
+    const zipData = fs.readFileSync(`${logsPath}${logArchiveFileName}`);
+    JSZip.loadAsync(zipData).then(zip => zipLogsWork(zip, fileList));
+  } else {
+    console.log('Creating new archive')
+    zipLogsWork(new JSZip(), fileList);
+  }
+}
+
+function addFiles(zip, fileList) {
+  fileList.forEach(filename => {
+    console.log(`Adding ${filename} to the archive`)
+    // need to check for file conflicts.
+    // cat files that already exist
+    zip.file(filename, fs.createReadStream(`${logsPath}${filename}`));
+  });
+}
+
+function saveZip(zip, fileList) {
+  zip.generateNodeStream({type: 'nodebuffer', streamFiles: true})
+    .pipe(fs.createWriteStream(`${logsPath}${logArchiveFileName}`))
+    .on('finish', function () {
+      console.log(`${logsPath}${logArchiveFileName} written`);
+      deleteArchivedFiles(fileList);
+    });
+}
+
+function deleteArchivedFiles(fileList) {
+  console.log(fileList);
+  fileList.forEach(file => fs.rm(`${logsPath}${file}`, err => {
+    if (err) {
+      // File deletion failed
+      console.error(err.message);
+      return;
+    }
+    console.log("File deleted successfully");
+    updateFileListAndEmit();
+  }));
+  console.log('Archived files deleted');
+}
+
+function zipLogsWork(zip, fileList) {
+  addFiles(zip, fileList);
+  saveZip(zip, fileList);
+}
 
 function writeToFile(host) {
   console.log(`outputting to file for host:${host}`);
@@ -52,17 +140,12 @@ function updateFileListAndEmit() {
   if (usersCount > minUserCount) io.emit('files', logs);
 }
 
-
 function timestampDays(timestamps) {
-  // DIDN'T WORK TESTING NOW
   return new Set([...timestamps.keys()].map(value => value.toISOString().slice(0, 10)));
 }
 
-
 function logsList() {
-  const files = fs.readdirSync(`${__dirname}/logs/`);
-  console.log(files);
-  return files;
+  return fs.readdirSync(logsPath);
 }
 
 function startPolling() {
@@ -95,24 +178,3 @@ function stopPolling() {
   hosts.forEach(host => writeToFile(host));
 }
 
-if (usersCount) startPolling();
-io.on('connection', (socket) => {
-  usersCount++;
-  console.log('user connected');
-  socket.emit('hosts', hosts);
-  socket.emit('files', logs);
-  if (usersCount === 1) startPolling();
-  socket.on('disconnect', () => {
-    console.log('user disconnected');
-    usersCount--;
-    if (usersCount === 0) stopPolling();
-  });
-});
-
-http.listen(port, () => {
-  console.log(`Socket.IO server running at http://localhost:${port}/`);
-});
-process.on('exit', function () {
-  console.log('About to exit.');
-  hosts.forEach(host => writeToFile(host));
-});
