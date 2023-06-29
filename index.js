@@ -49,7 +49,7 @@ function writeToFile(host) {
 
 function updateFileListAndEmit() {
   logs = logsList();
-  io.emit('files', logs);
+  if (usersCount > minUserCount) io.emit('files', logs);
 }
 
 
