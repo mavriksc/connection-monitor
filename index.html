@@ -54,11 +54,6 @@
   });
 
   socket.on('files', function (files) {
-    updateLogFileURLS(files);
-  });
-
-  function updateLogFileURLS(files) {
-    //TODO get element delete children then add children
     console.log(files);
     const logURLsUL = document.getElementById('logURLs');
     logURLsUL.innerHTML = '';
@@ -70,8 +65,7 @@
       p.appendChild(a);
       logURLsUL.appendChild(p);
     });
-  }
-
+  });
 
 </script>
 </body>
