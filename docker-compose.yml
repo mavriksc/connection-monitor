@@ -1,6 +1,6 @@
 services:
   connection-monitor:
-    image: smcarlisle/connection-monitor:0.3
+    image: smcarlisle/connection-monitor:0.4
     ports:
       - "3000:3000"
     environment:

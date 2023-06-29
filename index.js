@@ -44,7 +44,7 @@ function writeToFile(host) {
     });
   });
   pingCache.get(host).clear();
-  if (days.size > 0) updateFileListAndEmit();
+  updateFileListAndEmit();
 }
 
 function updateFileListAndEmit() {
