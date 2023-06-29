@@ -21,7 +21,6 @@ let logs = logsList();
 hosts.forEach(h => pingCache.set(h, new Map()));
 let usersCount = minUserCount;
 
-
 if (usersCount) startPolling();
 io.on('connection', (socket) => {
   usersCount++;
@@ -55,11 +54,17 @@ process.on('exit', function () {
   hosts.forEach(host => writeToFile(host));
 });
 
-cron.schedule('* * 1 * *', () => {
-  console.log('Starting Archive cron job');
-  //TODO Get list of logs to archive given uncompressedLogDays
-  zipLogs(logs);
+cron.schedule('0 0 1 * *', () => {
+  archiveOldLogs();
 });
+
+function archiveOldLogs() {
+  console.log('Starting Archive cron job');
+  let cutoffDate = new Date(new Date().toISOString().slice(0, 10));
+  cutoffDate.setDate(cutoffDate.getDate() - uncompressedLogDays);
+  const logsToArchive = logs.filter(s => cutoffDate > (new Date(s.slice(s.length - 14, s.length - 4))));
+  if (logsToArchive.length)  zipLogs(logsToArchive);
+}
 
 function zipLogs(fileList) {
   if (logs.indexOf(logArchiveFileName) >= 0) {
