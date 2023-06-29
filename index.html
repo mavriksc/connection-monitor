@@ -6,6 +6,11 @@
 </head>
 <body>
 <div id="graph"></div>
+<div style="padding-left: 5%">
+    <h2>Log Files</h2>
+    <div id="logURLs">
+    </div>
+</div>
 <script src="/socket.io/socket.io.js"></script>
 
 <script>
@@ -47,6 +52,25 @@
       });
     });
   });
+
+  socket.on('files', function (files) {
+    updateLogFileURLS(files);
+  });
+
+  function updateLogFileURLS(files) {
+    //TODO get element delete children then add children
+    console.log(files);
+    const logURLsUL = document.getElementById('logURLs');
+    logURLsUL.innerHTML = '';
+    files.forEach(file => {
+      const p = document.createElement('p');
+      const a = document.createElement('a');
+      a.innerText = file;
+      a.href = `/${file}`;
+      p.appendChild(a);
+      logURLsUL.appendChild(p);
+    });
+  }
 
 
 </script>
