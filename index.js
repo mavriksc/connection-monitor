@@ -31,27 +31,31 @@ function writeToFile(host) {
   console.log(`outputting to file for host:${host}`);
   const timestamps = new Map([...pingCache.get(host)]
     .sort((a, b) => a[0].getTime() - b[0].getTime()));
-  //TODO check for day change to create new log file
   const days = timestampDays(timestamps);
-
-  if (days.size === 1) {
-    //TODO refactor below
-  }
-  let output = '';
-  timestamps.forEach((value, key) =>
-    output = output.concat(`\n${key.toISOString()} : ${value}`));
-  //TODO GET DATE FROM FIRST ELEMENT/MAP
-  const date = new Date().toISOString().slice(0, 10);
-  const filename = `logs/${host}-${date}.log`;
-  fs.appendFile(filename, output, err => {
-    if (err) console.log("writing error")
+  days.forEach(day => {
+    const dayKeys = [...timestamps.keys()].filter(value => value.toISOString().slice(0, 10) === day);
+    let output = '';
+    dayKeys.forEach(timestamp => {
+      output = output.concat(`\n${timestamp.toISOString()} : ${timestamps.get(timestamp)}`);
+    });
+    const filename = `logs/${host}-${day}.log`;
+    fs.appendFile(filename, output, err => {
+      if (err) console.log("writing error")
+    });
   });
   pingCache.get(host).clear();
-  //TODO EMIT FILES LIST ON IO.EMIT
+  if (days.size > 0) updateFileListAndEmit();
 }
 
+function updateFileListAndEmit() {
+  logs = logsList();
+  io.emit('files', logs);
+}
+
+
 function timestampDays(timestamps) {
-  return [...new Set(timestamps.keys().map(value => value.toISOString().slice(0, 10)))];
+  // DIDN'T WORK TESTING NOW
+  return new Set([...timestamps.keys()].map(value => value.toISOString().slice(0, 10)));
 }
 
 
