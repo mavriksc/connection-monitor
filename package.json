@@ -4,6 +4,8 @@
   "description": "Will ping things and graph it",
   "dependencies": {
     "express": "^4.17.1",
+    "jszip": "^3.10.1",
+    "node-cron": "^3.0.2",
     "ping": "^0.4.4",
     "plotly.js": "^1.47.4",
     "socket.io": "^4.1.2"
