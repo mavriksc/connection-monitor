@@ -22,11 +22,14 @@ hosts.forEach(h => pingCache.set(h, new Map()));
 let usersCount = minUserCount;
 
 if (usersCount) startPolling();
+
 io.on('connection', (socket) => {
   usersCount++;
   console.log('user connected');
+  hosts.forEach(host => writeToFile(host));
   socket.emit('hosts', hosts);
   socket.emit('files', logs);
+  socket.emit('historicalData', getTodaysLoggedData())
   if (usersCount === 1) startPolling();
   socket.on('disconnect', () => {
     console.log('user disconnected');
@@ -58,12 +61,17 @@ cron.schedule('0 0 1 * *', () => {
   archiveOldLogs();
 });
 
+function getTodaysLoggedData() {
+  const day = new Date().toISOString().slice(0, 10);
+  return hosts.map(host => readFileToList(`${logsPath}${host}-${day}.log`));
+}
+
 function archiveOldLogs() {
   console.log('Starting Archive cron job');
   let cutoffDate = new Date(new Date().toISOString().slice(0, 10));
   cutoffDate.setDate(cutoffDate.getDate() - uncompressedLogDays);
   const logsToArchive = logs.filter(s => cutoffDate > (new Date(s.slice(s.length - 14, s.length - 4))));
-  if (logsToArchive.length)  zipLogs(logsToArchive);
+  if (logsToArchive.length) zipLogs(logsToArchive);
 }
 
 function zipLogs(fileList) {
@@ -124,7 +132,7 @@ function writeToFile(host) {
     const dayKeys = [...timestamps.keys()].filter(value => value.toISOString().slice(0, 10) === day);
     let output = '';
     dayKeys.forEach(timestamp => {
-      output = output.concat(`\n${timestamp.toISOString()} : ${timestamps.get(timestamp)}`);
+      output = output.concat(`\n${timestamp.toISOString()} | ${timestamps.get(timestamp)}`);
     });
     const filename = `logs/${host}-${day}.log`;
     fs.appendFile(filename, output, err => {
@@ -133,6 +141,13 @@ function writeToFile(host) {
   });
   pingCache.get(host).clear();
   updateFileListAndEmit();
+}
+
+function readFileToList(file) {
+  return fs.readFileSync(file, 'utf8')
+    .split('\n')
+    .filter(l => l.length > 0)
+    .map(l => [new Date(l.substring(0, 24)), parseInt(l.substring(27))]);
 }
 
 function updateFileListAndEmit() {

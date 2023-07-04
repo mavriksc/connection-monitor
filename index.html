@@ -17,13 +17,19 @@
   const socket = io();
   let hs;
 
-  function createPlot() {
+  function createPlot(historicalData) {
     const data = [];
-    hs.forEach(host => {
-      const time = new Date();
+    hs.forEach((host, index) => {
+      const xs = [];
+      const ys = [];
+
+      historicalData[index].forEach(pair => {
+        xs.push(new Date(pair[0]));
+        ys.push(pair[1])
+      });
       const traceData = {
-        x: [time],
-        y: [0],
+        x: xs,
+        y: ys,
         name: host,
         mode: 'lines',
       }
@@ -43,9 +49,7 @@
 
   socket.on('hosts', function (hosts) {
     hs = hosts;
-    createPlot()
     hs.forEach(function (host) {
-      console.log(host);
       socket.on(host, function (msg) {
         const response = JSON.parse(msg);
         updatePlot(host, response);
@@ -53,8 +57,11 @@
     });
   });
 
+  socket.on('historicalData', function (historicalData) {
+    createPlot(historicalData);
+  });
+
   socket.on('files', function (files) {
-    console.log(files);
     const logURLsUL = document.getElementById('logURLs');
     logURLsUL.innerHTML = '';
     files.forEach(file => {
