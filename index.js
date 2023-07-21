@@ -57,7 +57,7 @@ process.on('exit', function () {
   hosts.forEach(host => writeToFile(host));
 });
 
-cron.schedule('0 0 1 * *', () => {
+cron.schedule('0 2 * * *', () => {
   archiveOldLogs();
 });
 
@@ -91,7 +91,16 @@ function addFiles(zip, fileList) {
     console.log(`Adding ${filename} to the archive`)
     // need to check for file conflicts.
     // cat files that already exist
-    zip.file(filename, fs.createReadStream(`${logsPath}${filename}`));
+    // could maybe be smart and append new lines or something
+    // but na blast current archived file and just add the one still in the dir
+
+    if (zip.file(filename)===null)
+      zip.file(filename, fs.createReadStream(`${logsPath}${filename}`));
+    else{
+      console.log(`File ${filename} already exists in log archive`);
+      zip.remove(filename);
+      zip.file(filename, fs.createReadStream(`${logsPath}${filename}`));
+    }
   });
 }
 
@@ -115,7 +124,6 @@ function deleteArchivedFiles(fileList) {
     console.log("File deleted successfully");
     updateFileListAndEmit();
   }));
-  console.log('Archived files deleted');
 }
 
 function zipLogsWork(zip, fileList) {
