@@ -63,7 +63,11 @@ cron.schedule('0 2 * * *', () => {
 
 function getTodaysLoggedData() {
   const day = new Date().toISOString().slice(0, 10);
-  return hosts.map(host => readFileToList(`${logsPath}${host}-${day}.log`));
+  return hosts.map(host => {
+    let list = readFileToList(`${logsPath}${host}-${day}.log`);
+    pingCache.get(host).forEach((v, k) => list.push([k, v]));
+    return list;
+  });
 }
 
 function archiveOldLogs() {
@@ -94,9 +98,9 @@ function addFiles(zip, fileList) {
     // could maybe be smart and append new lines or something
     // but na blast current archived file and just add the one still in the dir
 
-    if (zip.file(filename)===null)
+    if (zip.file(filename) === null)
       zip.file(filename, fs.createReadStream(`${logsPath}${filename}`));
-    else{
+    else {
       console.log(`File ${filename} already exists in log archive`);
       zip.remove(filename);
       zip.file(filename, fs.createReadStream(`${logsPath}${filename}`));
@@ -105,7 +109,7 @@ function addFiles(zip, fileList) {
 }
 
 function saveZip(zip, fileList) {
-  zip.generateNodeStream({type: 'nodebuffer', streamFiles: true})
+  zip.generateNodeStream({type: 'nodebuffer', streamFiles: true, compression: 'DEFLATE'})
     .pipe(fs.createWriteStream(`${logsPath}${logArchiveFileName}`))
     .on('finish', function () {
       console.log(`${logsPath}${logArchiveFileName} written`);
@@ -152,10 +156,10 @@ function writeToFile(host) {
 }
 
 function readFileToList(file) {
-  return fs.readFileSync(file, 'utf8')
+  return fs.existsSync(file) ? fs.readFileSync(file, 'utf8')
     .split('\n')
     .filter(l => l.length > 0)
-    .map(l => [new Date(l.substring(0, 24)), parseInt(l.substring(27))]);
+    .map(l => [new Date(l.substring(0, 24)), parseInt(l.substring(27))]) : [];
 }
 
 function updateFileListAndEmit() {
