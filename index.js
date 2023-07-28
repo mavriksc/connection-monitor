@@ -40,6 +40,9 @@ io.on('connection', (socket) => {
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
+app.get('/template.js', (req, res) => {
+  res.sendFile(__dirname + '/template.js');
+});
 app.get('/:filename', (req, res) => {
   if (logs.indexOf(req.params.filename) >= 0)
     res.download(`${logsPath}${req.params.filename}`);

@@ -3,16 +3,20 @@
 <head>
     <title>Connection tester</title>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/template.js"></script>
+    <style>
+        a { color:darkcyan }
+        a:visited { color:darkmagenta }
+    </style>
 </head>
-<body>
+<body style="background: #111111">
 <div id="graph"></div>
 <div style="padding-left: 5%">
-    <h2>Log Files</h2>
+    <h2 style="color: lightseagreen">Log Files</h2>
     <div id="logURLs">
     </div>
 </div>
-<script src="/socket.io/socket.io.js"></script>
-
 <script>
   const socket = io();
   let hs;
@@ -35,7 +39,7 @@
       }
       data.push(traceData);
     });
-    Plotly.plot('graph', data);
+    Plotly.plot('graph', data,{template: template});
   }
 
   function updatePlot(host, response) {
