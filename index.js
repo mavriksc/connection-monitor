@@ -19,14 +19,23 @@ const pingCache = new Map();
 
 let logs = logsList();
 hosts.forEach(h => pingCache.set(h, new Map()));
+
+
+loadCache();
 let usersCount = minUserCount;
 
 if (usersCount) startPolling();
 
+
+//TODO refactor pingCache to hold 12 hours of data -DONE
+// every hour purge old data - DONE
+// and recalculate stats.
+// also write results directly to file instead of waiting.-DONE
+// on server startup fill cache with data-DONE
+
 io.on('connection', (socket) => {
   usersCount++;
   console.log('user connected');
-  hosts.forEach(host => writeToFile(host));
   socket.emit('hosts', hosts);
   socket.emit('files', logs);
   socket.emit('historicalData', getTodaysLoggedData())
@@ -57,19 +66,39 @@ http.listen(port, () => {
 
 process.on('exit', function () {
   console.log('About to exit.');
-  hosts.forEach(host => writeToFile(host));
 });
 
 cron.schedule('0 2 * * *', () => {
   archiveOldLogs();
 });
 
-function getTodaysLoggedData() {
+cron.schedule('0 * * * *', () => {
+  console.log('12 hour sweep.')
+  clearOldPingData();
+});
+
+function clearOldPingData() {
+  const cutoffDate = new Date()
+  cutoffDate.setDate(cutoffDate.getDate() - (12 * 60 * 60 * 1000))
+  hosts.forEach(host => {
+    pingCache.get(host).keys().forEach(timestamp => {
+      if (timestamp < cutoffDate)
+        pingCache.get(host).delete(timestamp)
+    })
+  });
+}
+
+function loadCache() {
   const day = new Date().toISOString().slice(0, 10);
-  return hosts.map(host => {
+  hosts.forEach(host => {
     let list = readFileToList(`${logsPath}${host}-${day}.log`);
-    pingCache.get(host).forEach((v, k) => list.push([k, v]));
-    return list;
+    list.forEach(value => pingCache.get(host).set(value[0], value[1]));
+  });
+}
+
+function getTodaysLoggedData() {
+  return hosts.map(host => {
+    return [...pingCache.get(host)];
   });
 }
 
@@ -138,24 +167,16 @@ function zipLogsWork(zip, fileList) {
   saveZip(zip, fileList);
 }
 
-function writeToFile(host) {
-  console.log(`outputting to file for host:${host}`);
-  const timestamps = new Map([...pingCache.get(host)]
-    .sort((a, b) => a[0].getTime() - b[0].getTime()));
-  const days = timestampDays(timestamps);
-  days.forEach(day => {
-    const dayKeys = [...timestamps.keys()].filter(value => value.toISOString().slice(0, 10) === day);
-    let output = '';
-    dayKeys.forEach(timestamp => {
-      output = output.concat(`\n${timestamp.toISOString()} | ${timestamps.get(timestamp)}`);
-    });
-    const filename = `logs/${host}-${day}.log`;
-    fs.appendFile(filename, output, err => {
-      if (err) console.log("writing error")
-    });
+
+function writeToFile(host, timestamp, ping) {
+  const dayString = timestamp.toISOString().slice(0, 10);
+  const filename = `logs/${host}-${dayString}.log`;
+  const newDay = !fs.existsSync(filename);
+  const output = `\n${timestamp.toISOString()} | ${ping}`
+  fs.appendFile(filename, output, err => {
+    if (err) console.log("writing error")
   });
-  pingCache.get(host).clear();
-  updateFileListAndEmit();
+  if (newDay) updateFileListAndEmit();
 }
 
 function readFileToList(file) {
@@ -190,9 +211,7 @@ function startPolling() {
               io.emit(res.inputHost, resJson);
             }
             pingCache.get(host).set(time, ping);
-            if (pingCache.get(host).size > 99) {
-              writeToFile(host);
-            }
+            writeToFile(host, time, ping);
           });
         }, pollingRate)
       );
@@ -205,6 +224,5 @@ function stopPolling() {
     console.log('stop polling: ' + key);
     clearInterval(value);
   });
-  hosts.forEach(host => writeToFile(host));
 }
 
