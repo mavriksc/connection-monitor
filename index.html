@@ -6,15 +6,52 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/template.js"></script>
     <style>
-        a { color:darkcyan }
-        a:visited { color:darkmagenta }
+        a {
+            color: darkcyan
+        }
+
+        a:visited {
+            color: darkmagenta
+        }
+        .row {
+            display: flex;
+        }
+
+        .column {
+            flex: 50%;
+        }
+        th {
+            padding: 0 10px 0 10px ;
+        }
     </style>
 </head>
 <body style="background: #111111">
 <div id="graph"></div>
-<div style="padding-left: 5%">
-    <h2 style="color: lightseagreen">Log Files</h2>
-    <div id="logURLs">
+<div class="row">
+    <div class="column">
+        <div style="padding-left: 5%">
+            <h2 style="color: lightseagreen">Log Files</h2>
+            <div id="logURLs">
+            </div>
+        </div>
+    </div>
+    <div class="column">
+        <table id="stats" style="color: deeppink">
+            <caption>Statistics</caption>
+            <thead>
+            <tr>
+                <th>Host</th>
+                <th>Average</th>
+                <th>Std. Dev.</th>
+                <th>&gt;100</th>
+                <th>&gt;1000</th>
+                <th>Timeouts</th>
+            </tr>
+            </thead>
+            <tbody id="stats-body">
+
+            </tbody>
+        </table>
     </div>
 </div>
 <script>
@@ -39,7 +76,7 @@
       }
       data.push(traceData);
     });
-    Plotly.plot('graph', data,{template: template});
+    Plotly.plot('graph', data, {template: template});
   }
 
   function updatePlot(host, response) {
@@ -76,6 +113,16 @@
       p.appendChild(a);
       logURLsUL.appendChild(p);
     });
+  });
+
+  socket.on('statistics', function (stats) {
+    const statsTable = document.getElementById('stats-body');
+    statsTable.innerHTML = '';
+    stats.forEach(rowData => {
+      const row = statsTable.insertRow();
+      row.innerHTML=`<td>${rowData[0]}</td><td>${rowData[1].toFixed(2)}</td><td>${rowData[2].toFixed(2)}</td><td>${rowData[3]}</td><td>${rowData[4]}</td><td>${rowData[5]}</td>`
+    });
+
   });
 
 </script>

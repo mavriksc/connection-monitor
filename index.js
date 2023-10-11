@@ -16,7 +16,6 @@ const logsPath = `${__dirname}/logs/`;
 const logArchiveFileName = 'logs.zip';
 const intervalMap = new Map();
 const pingCache = new Map();
-
 let logs = logsList();
 hosts.forEach(h => pingCache.set(h, new Map()));
 
@@ -38,7 +37,8 @@ io.on('connection', (socket) => {
   console.log('user connected');
   socket.emit('hosts', hosts);
   socket.emit('files', logs);
-  socket.emit('historicalData', getTodaysLoggedData())
+  socket.emit('historicalData', getTodaysLoggedData());
+  socket.emit('statistics', calculateStats());
   if (usersCount === 1) startPolling();
   socket.on('disconnect', () => {
     console.log('user disconnected');
@@ -75,7 +75,30 @@ cron.schedule('0 2 * * *', () => {
 cron.schedule('0 * * * *', () => {
   console.log('12 hour sweep.')
   clearOldPingData();
+  if (usersCount > minUserCount) io.emit(calculateStats());
 });
+
+function calculateStats() {
+  console.log('Calculating stats');
+  return hosts.map(host => {
+    const pings = Array.from(pingCache.get(host).values());
+    let avg = 0;
+    let stdDev = 0;
+    let overHundred = 0;
+    let overThousand = 0;
+    let zeroesCount = 0;
+    pings.forEach(ping => {
+      if (ping > 0) {
+        avg += ping;
+        if (ping >= 100) overHundred++
+        if (ping >= 1000) overThousand++
+      } else zeroesCount++
+    });
+    avg = avg / (pings.length - zeroesCount);
+    stdDev = Math.sqrt(pings.filter(p => p > 0).reduce((partialSum, p) => partialSum + (p - avg) ** 2, 0) / (pings.length - zeroesCount));
+    return [host, avg, stdDev, overHundred, overThousand, zeroesCount]
+  });
+}
 
 function clearOldPingData() {
   const cutoffDate = new Date()
@@ -99,6 +122,61 @@ function loadCache() {
 function getTodaysLoggedData() {
   return hosts.map(host => {
     return [...pingCache.get(host)];
+  });
+}
+
+
+function writeToFile(host, timestamp, ping) {
+  const dayString = timestamp.toISOString().slice(0, 10);
+  const filename = `logs/${host}-${dayString}.log`;
+  const newDay = !fs.existsSync(filename);
+  const output = `\n${timestamp.toISOString()} | ${ping}`
+  fs.appendFile(filename, output, err => {
+    if (err) console.log("writing error")
+  });
+  if (newDay) updateFileListAndEmit();
+}
+
+function readFileToList(file) {
+  return fs.existsSync(file) ? fs.readFileSync(file, 'utf8')
+    .split('\n')
+    .filter(l => l.length > 0)
+    .map(l => [new Date(l.substring(0, 24)), parseInt(l.substring(27))]) : [];
+}
+
+function updateFileListAndEmit() {
+  logs = logsList();
+  if (usersCount > minUserCount) io.emit('files', logs);
+}
+
+function logsList() {
+  return fs.readdirSync(logsPath);
+}
+
+function startPolling() {
+  hosts.forEach(function (host) {
+      console.log('Start polling host ' + host);
+      intervalMap.set(host, setInterval(function () {
+          ping.promise.probe(host).then(function (res) {
+            const time = new Date();
+            const ping = res.alive ? res.time : 0;
+            if (usersCount > minUserCount) {
+              const resJson = '{"time":"' + time + '","ping":' + ping + '}';
+              io.emit(res.inputHost, resJson);
+            }
+            pingCache.get(host).set(time, ping);
+            writeToFile(host, time, ping);
+          });
+        }, pollingRate)
+      );
+    }
+  );
+}
+
+function stopPolling() {
+  intervalMap.forEach((value, key) => {
+    console.log('stop polling: ' + key);
+    clearInterval(value);
   });
 }
 
@@ -166,63 +244,3 @@ function zipLogsWork(zip, fileList) {
   addFiles(zip, fileList);
   saveZip(zip, fileList);
 }
-
-
-function writeToFile(host, timestamp, ping) {
-  const dayString = timestamp.toISOString().slice(0, 10);
-  const filename = `logs/${host}-${dayString}.log`;
-  const newDay = !fs.existsSync(filename);
-  const output = `\n${timestamp.toISOString()} | ${ping}`
-  fs.appendFile(filename, output, err => {
-    if (err) console.log("writing error")
-  });
-  if (newDay) updateFileListAndEmit();
-}
-
-function readFileToList(file) {
-  return fs.existsSync(file) ? fs.readFileSync(file, 'utf8')
-    .split('\n')
-    .filter(l => l.length > 0)
-    .map(l => [new Date(l.substring(0, 24)), parseInt(l.substring(27))]) : [];
-}
-
-function updateFileListAndEmit() {
-  logs = logsList();
-  if (usersCount > minUserCount) io.emit('files', logs);
-}
-
-function timestampDays(timestamps) {
-  return new Set([...timestamps.keys()].map(value => value.toISOString().slice(0, 10)));
-}
-
-function logsList() {
-  return fs.readdirSync(logsPath);
-}
-
-function startPolling() {
-  hosts.forEach(function (host) {
-      console.log('Start polling host ' + host);
-      intervalMap.set(host, setInterval(function () {
-          ping.promise.probe(host).then(function (res) {
-            const time = new Date();
-            const ping = res.alive ? res.time : 0;
-            if (usersCount > minUserCount) {
-              const resJson = '{"time":"' + time + '","ping":' + ping + '}';
-              io.emit(res.inputHost, resJson);
-            }
-            pingCache.get(host).set(time, ping);
-            writeToFile(host, time, ping);
-          });
-        }, pollingRate)
-      );
-    }
-  );
-}
-
-function stopPolling() {
-  intervalMap.forEach((value, key) => {
-    console.log('stop polling: ' + key);
-    clearInterval(value);
-  });
-}
-
