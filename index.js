@@ -16,22 +16,19 @@ const logsPath = `${__dirname}/logs/`;
 const logArchiveFileName = 'logs.zip';
 const intervalMap = new Map();
 const pingCache = new Map();
-let logs = logsList();
-hosts.forEach(h => pingCache.set(h, new Map()));
 
-
-loadCache();
-let usersCount = minUserCount;
-
-if (usersCount) startPolling();
-
-
-//TODO refactor pingCache to hold 12 hours of data -DONE
+// refactor pingCache to hold 12 hours of data -DONE
 // every hour purge old data - DONE
-// and recalculate stats.
+// and recalculate stats.-DONE
 // also write results directly to file instead of waiting.-DONE
 // on server startup fill cache with data-DONE
 
+let logs = logsList();
+let usersCount = minUserCount;
+hosts.forEach(h => pingCache.set(h, new Map()));
+loadCache();
+
+if (usersCount) startPolling();
 io.on('connection', (socket) => {
   usersCount++;
   console.log('user connected');
@@ -46,12 +43,15 @@ io.on('connection', (socket) => {
     if (usersCount === 0) stopPolling();
   });
 });
+
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
+
 app.get('/template.js', (req, res) => {
   res.sendFile(__dirname + '/template.js');
 });
+
 app.get('/:filename', (req, res) => {
   if (logs.indexOf(req.params.filename) >= 0)
     res.download(`${logsPath}${req.params.filename}`);
@@ -60,6 +60,7 @@ app.get('/:filename', (req, res) => {
     res.status(404).send({error: 'no log file here ¯\\_(ツ)_/¯'});
   }
 });
+
 http.listen(port, () => {
   console.log(`Socket.IO server running at http://localhost:${port}/`);
 });
@@ -83,7 +84,7 @@ function calculateStats() {
   return hosts.map(host => {
     const pings = Array.from(pingCache.get(host).values());
     let avg = 0;
-    let stdDev = 0;
+    let stdDev;
     let overHundred = 0;
     let overThousand = 0;
     let zeroesCount = 0;
@@ -124,7 +125,6 @@ function getTodaysLoggedData() {
     return [...pingCache.get(host)];
   });
 }
-
 
 function writeToFile(host, timestamp, ping) {
   const dayString = timestamp.toISOString().slice(0, 10);
