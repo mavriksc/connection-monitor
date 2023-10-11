@@ -1,13 +1,13 @@
 const app = require('express')();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-const port = process.env.PORT || 3000;
 const ping = require('ping');
 const fs = require('fs');
 const JSZip = require('jszip');
 const cron = require('node-cron');
 
 
+const port = process.env.PORT || 3000;
 const hosts = process.env.HOSTS ? process.env.HOSTS.split(',') : ['8.8.8.8'];
 const pollingRate = (process.env.POLL_RATE ? process.env.POLL_RATE : 5) * 1000;
 const minUserCount = process.env.ALWAYS_ON === 'true' ? 1 : 0;
@@ -16,12 +16,6 @@ const logsPath = `${__dirname}/logs/`;
 const logArchiveFileName = 'logs.zip';
 const intervalMap = new Map();
 const pingCache = new Map();
-
-// refactor pingCache to hold 12 hours of data -DONE
-// every hour purge old data - DONE
-// and recalculate stats.-DONE
-// also write results directly to file instead of waiting.-DONE
-// on server startup fill cache with data-DONE
 
 let logs = logsList();
 let usersCount = minUserCount;
