@@ -96,14 +96,15 @@ function calculateStats() {
 }
 
 function clearOldPingData() {
-  const cutoffDate = new Date()
-  cutoffDate.setDate(cutoffDate.getDate() - (12 * 60 * 60 * 1000))
+  const cutoffDate = new Date();
+  cutoffDate.setTime(cutoffDate.getTime() - (12 * 60 * 60 * 1000));
   hosts.forEach(host => {
-    pingCache.get(host).keys().forEach(timestamp => {
-      if (timestamp < cutoffDate)
-        pingCache.get(host).delete(timestamp)
-    })
-  });
+    pingCache.set(host, filterDates(pingCache.get(host), cutoffDate));
+  })
+}
+
+function filterDates(map, date) {
+  return new Map([...map].filter(value => value[0].getTime() > date.getTime()));
 }
 
 function loadCache() {
