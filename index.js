@@ -44,6 +44,9 @@ app.get('/', (req, res) => {
 
 app.get('/template.js', (req, res) => {
   res.sendFile(__dirname + '/template.js');
+  
+});app.get('/favicon.ico', (req, res) => {
+  res.sendFile(__dirname + '/favicon.ico');
 });
 
 app.get('/:filename', (req, res) => {
