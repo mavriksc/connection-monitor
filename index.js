@@ -41,10 +41,12 @@ io.on('connection', (socket) => {
 app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
-
+app.get('/health', (req, res) => {
+  res.status(200).send();
+});
 app.get('/template.js', (req, res) => {
   res.sendFile(__dirname + '/template.js');
-  
+
 });app.get('/favicon.ico', (req, res) => {
   res.sendFile(__dirname + '/favicon.ico');
 });
