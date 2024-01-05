@@ -77,7 +77,7 @@
       }
       data.push(traceData);
     });
-    Plotly.plot('graph', data, {template: template});
+    Plotly.newPlot('graph', data, {template: template});
   }
 
   function updatePlot(host, response) {

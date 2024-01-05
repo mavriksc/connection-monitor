@@ -21,15 +21,16 @@ let logs = logsList();
 let usersCount = minUserCount;
 hosts.forEach(h => pingCache.set(h, new Map()));
 loadCache();
-
+let stats = calculateStats();
 if (usersCount) startPolling();
+
 io.on('connection', (socket) => {
   usersCount++;
   console.log('user connected');
   socket.emit('hosts', hosts);
   socket.emit('files', logs);
-  socket.emit('historicalData', getTodaysLoggedData());
-  socket.emit('statistics', calculateStats());
+  socket.emit('historicalData', cacheToGraphData());
+  socket.emit('statistics', stats);
   if (usersCount === 1) startPolling();
   socket.on('disconnect', () => {
     console.log('user disconnected');
@@ -47,7 +48,8 @@ app.get('/health', (req, res) => {
 app.get('/template.js', (req, res) => {
   res.sendFile(__dirname + '/template.js');
 
-});app.get('/favicon.ico', (req, res) => {
+});
+app.get('/favicon.ico', (req, res) => {
   res.sendFile(__dirname + '/favicon.ico');
 });
 
@@ -73,9 +75,13 @@ cron.schedule('0 2 * * *', () => {
 });
 
 cron.schedule('0 * * * *', () => {
-  console.log('12 hour sweep.')
+  console.log('Purge cache of data older than 12 hours and calculate statistics')
   clearOldPingData();
-  if (usersCount > minUserCount) io.emit(calculateStats());
+  stats = calculateStats();
+  if (usersCount > minUserCount) {
+    io.emit('statistics', stats);
+    io.emit('historicalData', cacheToGraphData());
+  }
 });
 
 function calculateStats() {
@@ -95,7 +101,8 @@ function calculateStats() {
       } else zeroesCount++
     });
     avg = avg / (pings.length - zeroesCount);
-    stdDev = Math.sqrt(pings.filter(p => p > 0).reduce((partialSum, p) => partialSum + (p - avg) ** 2, 0) / (pings.length - zeroesCount));
+    stdDev = Math.sqrt(pings.filter(p => p > 0)
+      .reduce((partialSum, p) => partialSum + (p - avg) ** 2, 0) / (pings.length - zeroesCount));
     return [host, avg, stdDev, overHundred, overThousand, zeroesCount]
   });
 }
@@ -105,7 +112,7 @@ function clearOldPingData() {
   cutoffDate.setTime(cutoffDate.getTime() - (12 * 60 * 60 * 1000));
   hosts.forEach(host => {
     pingCache.set(host, filterDates(pingCache.get(host), cutoffDate));
-  })
+  });
 }
 
 function filterDates(map, date) {
@@ -120,7 +127,7 @@ function loadCache() {
   });
 }
 
-function getTodaysLoggedData() {
+function cacheToGraphData() {
   return hosts.map(host => {
     return [...pingCache.get(host)];
   });
