@@ -3,7 +3,7 @@
 <head>
     <title>Connection tester</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="/node_modules/plotly.js/dist/plotly.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="/template.js"></script>
     <style>
@@ -125,6 +125,9 @@
     });
 
   });
+  onresize = (event) => {
+    Plotly.Plots.resize('graph');
+  };
 
 </script>
 </body>

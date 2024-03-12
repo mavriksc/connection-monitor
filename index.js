@@ -53,6 +53,9 @@ app.get('/favicon.ico', (req, res) => {
   res.sendFile(__dirname + '/favicon.ico');
 });
 
+app.get('/node_modules/plotly.js/dist/plotly.min.js',(req, res) => {
+  res.sendFile(__dirname + req.path);
+});
 app.get('/:filename', (req, res) => {
   if (logs.indexOf(req.params.filename) >= 0)
     res.download(`${logsPath}${req.params.filename}`);
