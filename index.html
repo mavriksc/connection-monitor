@@ -3,8 +3,7 @@
 <head>
     <title>Connection tester</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
-    <script src="/node_modules/plotly.js/dist/plotly.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="/public/plotly-basic.min.js"></script>
     <script src="/template.js"></script>
     <style>
         a {
@@ -56,7 +55,7 @@
     </div>
 </div>
 <script>
-  const socket = io();
+  const events = new EventSource('/events');
   let hs;
 
   function createPlot(historicalData) {
@@ -89,34 +88,32 @@
 
   }
 
-  socket.on('hosts', function (hosts) {
+  events.addEventListener('hosts', function (event) {
+    const hosts = JSON.parse(event.data);
     hs = hosts;
-    hs.forEach(function (host) {
-      socket.on(host, function (msg) {
-        const response = JSON.parse(msg);
-        updatePlot(host, response);
-      });
-    });
   });
 
-  socket.on('historicalData', function (historicalData) {
+  events.addEventListener('historicalData', function (event) {
+    const historicalData = JSON.parse(event.data);
     createPlot(historicalData);
   });
 
-  socket.on('files', function (files) {
+  events.addEventListener('files', function (event) {
+    const files = JSON.parse(event.data);
     const logURLsUL = document.getElementById('logURLs');
     logURLsUL.innerHTML = '';
     files.forEach(file => {
       const p = document.createElement('p');
       const a = document.createElement('a');
       a.innerText = file;
-      a.href = `/${file}`;
+      a.href = `/logs/${file}`;
       p.appendChild(a);
       logURLsUL.appendChild(p);
     });
   });
 
-  socket.on('statistics', function (stats) {
+  events.addEventListener('statistics', function (event) {
+    const stats = JSON.parse(event.data);
     const statsTable = document.getElementById('stats-body');
     statsTable.innerHTML = '';
     stats.forEach(rowData => {
@@ -124,6 +121,10 @@
       row.innerHTML=`<td>${rowData[0]}</td><td>${rowData[1].toFixed(2)}</td><td>${rowData[2].toFixed(2)}</td><td>${rowData[3]}</td><td>${rowData[4]}</td><td>${rowData[5]}</td>`
     });
 
+  });
+  events.addEventListener('ping', function (event) {
+    const response = JSON.parse(event.data);
+    updatePlot(response.host, response);
   });
   onresize = (_) => {
     Plotly.Plots.resize('graph');

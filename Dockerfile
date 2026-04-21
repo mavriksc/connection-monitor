@@ -1,9 +1,8 @@
-FROM node:21-alpine
+FROM node:22-alpine
 
 # Create app directory
 WORKDIR /usr/src/app
-COPY package*.json ./
-RUN npm ci
+RUN apk add --no-cache zip
 COPY . .
 EXPOSE 3000
 

@@ -1,23 +1,54 @@
 # connection-monitor
 
-Runs pings at specified interval against list of hosts and logs the results
+Lightweight connection monitor that pings configured hosts, logs the results, and serves a live browser graph.
 
+`0ms` means the ping failed or timed out.
 
-0ms = failed 
+## Run with Docker
 
-Environment:
+```powershell
+docker compose up --build
+```
 
-HOSTS: 8.8.8.8,google.com,amazon.com #Coma separated list of hosts to ping
+Open <http://localhost:3000/>.
 
-POLL_RATE: 5 # in seconds
+Logs are written to `./docker-logs` through the Compose volume.
 
-ALWAYS_ON: true #true : polling runs all the time false: polling only runs when user has UI open
+## Environment
 
-UNCOMPRESSED_LOG_DAYS: 0 #logs created yesterday or before are archived. 1 keeps yesterday's logs uncompressed...
+Configure these values in `docker-compose.yml` or as container environment variables:
 
-Run  `npm start`
+- `HOSTS`: comma-separated hosts to ping. Example: `8.8.8.8,google.com,amazon.com`
+- `POLL_RATE`: polling interval in seconds. Default: `5`
+- `ALWAYS_ON`: `true` keeps polling even when the UI is closed; `false` polls only while a browser is connected. Default: `false`
+- `UNCOMPRESSED_LOG_DAYS`: number of prior days to keep as loose `.log` files before archiving. Default: `0`
+- `PORT`: HTTP port inside the container. Default: `3000`
 
-build for deploy `npm ci`
+## Local Run
 
-Create image 
-docker `build . -t ({user})/connection-monitor:{version}`
+No npm dependencies are required.
+
+Prerequisites:
+
+- Node.js
+- `ping` available on `PATH`
+- `zip` available on `PATH` for log archival
+
+```powershell
+node index.js
+```
+
+## HTTP Endpoints
+
+- `/`: browser UI
+- `/health`: container health check
+- `/events`: Server-Sent Events stream for live updates
+- `/api/hosts`: configured hosts
+- `/api/logs`: available log files
+- `/api/history`: in-memory history loaded from today's logs
+- `/api/statistics`: current statistics
+- `/logs/<filename>`: safe log download route
+
+## Archiving
+
+At 2:00 AM, logs older than `UNCOMPRESSED_LOG_DAYS` are added to `logs.zip` with the system `zip` command. Source log files are deleted only after `zip` exits successfully.
