@@ -1,0 +1,462 @@
+{
+  "directed": false,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "label": "index.js",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L1",
+      "id": "index",
+      "community": 0
+    },
+    {
+      "label": "calculateStats()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L90",
+      "id": "index_calculatestats",
+      "community": 0
+    },
+    {
+      "label": "clearOldPingData()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L113",
+      "id": "index_clearoldpingdata",
+      "community": 0
+    },
+    {
+      "label": "filterDates()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L121",
+      "id": "index_filterdates",
+      "community": 0
+    },
+    {
+      "label": "loadCache()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L125",
+      "id": "index_loadcache",
+      "community": 0
+    },
+    {
+      "label": "cacheToGraphData()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L133",
+      "id": "index_cachetographdata",
+      "community": 0
+    },
+    {
+      "label": "writeToFile()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L139",
+      "id": "index_writetofile",
+      "community": 1
+    },
+    {
+      "label": "readFileToList()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L150",
+      "id": "index_readfiletolist",
+      "community": 0
+    },
+    {
+      "label": "updateFileListAndEmit()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L157",
+      "id": "index_updatefilelistandemit",
+      "community": 1
+    },
+    {
+      "label": "logsList()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L162",
+      "id": "index_logslist",
+      "community": 1
+    },
+    {
+      "label": "startPolling()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L166",
+      "id": "index_startpolling",
+      "community": 1
+    },
+    {
+      "label": "stopPolling()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L186",
+      "id": "index_stoppolling",
+      "community": 0
+    },
+    {
+      "label": "archiveOldLogs()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L193",
+      "id": "index_archiveoldlogs",
+      "community": 2
+    },
+    {
+      "label": "zipLogs()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L201",
+      "id": "index_ziplogs",
+      "community": 2
+    },
+    {
+      "label": "addFiles()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L213",
+      "id": "index_addfiles",
+      "community": 2
+    },
+    {
+      "label": "saveZip()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L231",
+      "id": "index_savezip",
+      "community": 3
+    },
+    {
+      "label": "deleteArchivedFiles()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L240",
+      "id": "index_deletearchivedfiles",
+      "community": 3
+    },
+    {
+      "label": "zipLogsWork()",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L253",
+      "id": "index_ziplogswork",
+      "community": 2
+    },
+    {
+      "label": "template.js",
+      "file_type": "code",
+      "source_file": "D:\\code\\connection-monitor\\template.js",
+      "source_location": "L1",
+      "id": "template",
+      "community": 4
+    }
+  ],
+  "links": [
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L90",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_calculatestats",
+      "source": "index",
+      "target": "index_calculatestats",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L113",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_clearoldpingdata",
+      "source": "index",
+      "target": "index_clearoldpingdata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L121",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_filterdates",
+      "source": "index",
+      "target": "index_filterdates",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L125",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_loadcache",
+      "source": "index",
+      "target": "index_loadcache",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L133",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_cachetographdata",
+      "source": "index",
+      "target": "index_cachetographdata",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L139",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_writetofile",
+      "source": "index",
+      "target": "index_writetofile",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L150",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_readfiletolist",
+      "source": "index",
+      "target": "index_readfiletolist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L157",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_updatefilelistandemit",
+      "source": "index",
+      "target": "index_updatefilelistandemit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L162",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_logslist",
+      "source": "index",
+      "target": "index_logslist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L166",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_startpolling",
+      "source": "index",
+      "target": "index_startpolling",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L186",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_stoppolling",
+      "source": "index",
+      "target": "index_stoppolling",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L193",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_archiveoldlogs",
+      "source": "index",
+      "target": "index_archiveoldlogs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L201",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_ziplogs",
+      "source": "index",
+      "target": "index_ziplogs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L213",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_addfiles",
+      "source": "index",
+      "target": "index_addfiles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L231",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_savezip",
+      "source": "index",
+      "target": "index_savezip",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L240",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_deletearchivedfiles",
+      "source": "index",
+      "target": "index_deletearchivedfiles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L253",
+      "weight": 1.0,
+      "_src": "index",
+      "_tgt": "index_ziplogswork",
+      "source": "index",
+      "target": "index_ziplogswork",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L147",
+      "weight": 1.0,
+      "_src": "index_writetofile",
+      "_tgt": "index_updatefilelistandemit",
+      "source": "index_writetofile",
+      "target": "index_updatefilelistandemit",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L178",
+      "weight": 1.0,
+      "_src": "index_startpolling",
+      "_tgt": "index_writetofile",
+      "source": "index_writetofile",
+      "target": "index_startpolling",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L158",
+      "weight": 1.0,
+      "_src": "index_updatefilelistandemit",
+      "_tgt": "index_logslist",
+      "source": "index_updatefilelistandemit",
+      "target": "index_logslist",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L198",
+      "weight": 1.0,
+      "_src": "index_archiveoldlogs",
+      "_tgt": "index_ziplogs",
+      "source": "index_archiveoldlogs",
+      "target": "index_ziplogs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L209",
+      "weight": 1.0,
+      "_src": "index_ziplogs",
+      "_tgt": "index_ziplogswork",
+      "source": "index_ziplogs",
+      "target": "index_ziplogswork",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L254",
+      "weight": 1.0,
+      "_src": "index_ziplogswork",
+      "_tgt": "index_addfiles",
+      "source": "index_addfiles",
+      "target": "index_ziplogswork",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L236",
+      "weight": 1.0,
+      "_src": "index_savezip",
+      "_tgt": "index_deletearchivedfiles",
+      "source": "index_savezip",
+      "target": "index_deletearchivedfiles",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "D:\\code\\connection-monitor\\index.js",
+      "source_location": "L255",
+      "weight": 1.0,
+      "_src": "index_ziplogswork",
+      "_tgt": "index_savezip",
+      "source": "index_savezip",
+      "target": "index_ziplogswork",
+      "confidence_score": 1.0
+    }
+  ],
+  "hyperedges": []
+}
